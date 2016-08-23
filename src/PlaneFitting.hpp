@@ -42,6 +42,27 @@ public:
     {
     }
 
+    /**
+     * EXPERIMENTAL Provide a center point \c p as well as a normal vector \c n which expresses the assumed
+     * normal of the point measurement (usually the normalized direction of the measurement).
+     * \c sigma_orth and \c sigma_norm express the deviation orthogonal and parallel to the normal vector.
+     */
+    explicit PlaneFitting(const Vector3& p, const Vector3& n, Scalar sigma_orth, Scalar sigma_norm = 0.0, Scalar weight=1.0)
+        : x(p.x()*weight), y(p.y()*weight), z(p.z()*weight)
+        , xx(p.x()*x), yy(p.y()*y), xy(p.x()*y)
+        , xz(p.x()*z), yz(p.y()*z), zz(p.z()*z)
+    {
+        Scalar vo = sigma_orth*sigma_orth * weight;
+        Scalar vn = sigma_norm*sigma_norm * weight;
+        Vector3 n_w = n*(vn-vo);
+        xx += n.x()*n_w.x() + vo;
+        yy += n.y()*n_w.y() + vo;
+        zz += n.z()*n_w.z() + vo;
+        xy += n.x()*n_w.y();
+        xz += n.x()*n_w.z();
+        yz += n.y()*n_w.z();
+    }
+
     /** 
      * @brief scale the statistics
      * Note that this will not have influence on the solution,
